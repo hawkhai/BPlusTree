@@ -139,8 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="cli.cc" />
     <ClCompile Include="ConsoleApplication1.cpp" />
-    <ClCompile Include="dump_numbers.cc" />
     <ClCompile Include="toyindexfile.cpp" />
   </ItemGroup>
   <ItemGroup>
