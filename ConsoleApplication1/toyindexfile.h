@@ -7,6 +7,46 @@
 #include <assert.h>
 #include <string.h>
 
+#define TEST
+#ifdef TEST
+
+#define BP_ORDER 4
+
+typedef int ToyValuek;
+struct ToyKeyk {
+    char k[16];
+
+    ToyKeyk(const char* str = "")
+    {
+        memset(k, 0, sizeof(k));
+        strcpy(k, str);
+    }
+
+    operator bool() const {
+        return strcmp(k, "");
+    }
+};
+
+inline int keycmp(const ToyKeyk& l, const ToyKeyk& r) {
+    return strcmp(l.k, r.k);
+}
+
+#define OPERATOR_KEYCMP(type) \
+    bool operator< (const ToyKeyk &l, const type &r) {\
+        return keycmp(l, r.key) < 0;\
+    }\
+    bool operator< (const type &l, const ToyKeyk &r) {\
+        return keycmp(l.key, r) < 0;\
+    }\
+    bool operator== (const ToyKeyk &l, const type &r) {\
+        return keycmp(l, r.key) == 0;\
+    }\
+    bool operator== (const type &l, const ToyKeyk &r) {\
+        return keycmp(l.key, r) == 0;\
+    }
+
+#else
+
 #define BP_ORDER 20
 
 typedef int ToyValuek;
@@ -42,6 +82,8 @@ inline int keycmp(const ToyKeyk& a, const ToyKeyk& b) {
     bool operator== (const type &l, const ToyKeyk &r) {\
         return keycmp(l.key, r) == 0;\
     }
+
+#endif
 
 #define OFFSET_META 0
 #define OFFSET_BLOCK OFFSET_META + sizeof(ToyMeta)
@@ -110,8 +152,11 @@ public:
         return meta;
     };
 
-
+#ifdef TEST
+public:
+#else
 private:
+#endif
     char path[512];
     ToyMeta meta;
 
