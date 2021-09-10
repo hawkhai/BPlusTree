@@ -24,7 +24,7 @@ inline typename T::child_t end(T& node) {
 }
 
 
-inline ToyIndex* find(internal_node_t& node, const ToyKeyk& key) {
+inline ToyIndex* find(ToyInternalNode& node, const ToyKeyk& key) {
     if (key) {
         return upper_bound(begin(node), end(node) - 1, key);
     }
@@ -34,7 +34,7 @@ inline ToyIndex* find(internal_node_t& node, const ToyKeyk& key) {
     }
     return begin(node);
 }
-inline ToyRecord* find(leaf_node_t& node, const ToyKeyk& key) {
+inline ToyRecord* find(ToyLeafNode& node, const ToyKeyk& key) {
     return lower_bound(begin(node), end(node), key);
 }
 
@@ -57,7 +57,7 @@ ToyIndexGOGO::ToyIndexGOGO(const char* p, bool force_empty)
 
 int ToyIndexGOGO::search(const ToyKeyk& key, ToyValuek* value) const
 {
-    leaf_node_t leaf;
+    ToyLeafNode leaf;
     map(&leaf, search_leaf(key));
 
     ToyRecord* record = find(leaf, key);
@@ -83,7 +83,7 @@ int ToyIndexGOGO::search_range(ToyKeyk* left, const ToyKeyk& right,
     size_t i = 0;
     ToyRecord* b = nullptr, * e = nullptr;
 
-    leaf_node_t leaf;
+    ToyLeafNode leaf;
     while (off != off_right && off != 0 && i < max) {
         map(&leaf, off);
 
@@ -123,8 +123,8 @@ int ToyIndexGOGO::search_range(ToyKeyk* left, const ToyKeyk& right,
 
 int ToyIndexGOGO::remove(const ToyKeyk& key)
 {
-    internal_node_t parent;
-    leaf_node_t leaf;
+    ToyInternalNode parent;
+    ToyLeafNode leaf;
 
     off_t parent_off = search_index(key);
     map(&parent, parent_off);
@@ -158,7 +158,7 @@ int ToyIndexGOGO::remove(const ToyKeyk& key)
 
             if (where == end(parent) - 1) {
                 assert(leaf.prev != 0);
-                leaf_node_t prev;
+                ToyLeafNode prev;
                 map(&prev, leaf.prev);
                 index_key = begin(prev)->key;
 
@@ -168,7 +168,7 @@ int ToyIndexGOGO::remove(const ToyKeyk& key)
             }
             else {
                 assert(leaf.next != 0);
-                leaf_node_t next;
+                ToyLeafNode next;
                 map(&next, leaf.next);
                 index_key = begin(leaf)->key;
 
@@ -194,14 +194,14 @@ int ToyIndexGOGO::insert(const ToyKeyk& key, ToyValuek value)
 {
     off_t parent = search_index(key);
     off_t offset = search_leaf(parent, key);
-    leaf_node_t leaf;
+    ToyLeafNode leaf;
     map(&leaf, offset);
 
     if (binary_search(begin(leaf), end(leaf), key))
         return 1;
 
     if (leaf.n == meta.order) {
-        leaf_node_t new_leaf;
+        ToyLeafNode new_leaf;
         node_create(offset, &leaf, &new_leaf);
 
         size_t point = leaf.n / 2;
@@ -222,7 +222,7 @@ int ToyIndexGOGO::insert(const ToyKeyk& key, ToyValuek value)
         unmap(&leaf, offset);
         unmap(&new_leaf, leaf.next);
 
-        insert_ToyKeyko_index(parent, new_leaf.children[0].key,
+        insert_key_to_index(parent, new_leaf.children[0].key,
             offset, leaf.next);
     }
     else {
@@ -236,7 +236,7 @@ int ToyIndexGOGO::insert(const ToyKeyk& key, ToyValuek value)
 int ToyIndexGOGO::update(const ToyKeyk& key, ToyValuek value)
 {
     off_t offset = search_leaf(key);
-    leaf_node_t leaf;
+    ToyLeafNode leaf;
     map(&leaf, offset);
 
     ToyRecord* record = find(leaf, key);
@@ -254,7 +254,7 @@ int ToyIndexGOGO::update(const ToyKeyk& key, ToyValuek value)
         return -1;
 }
 
-void ToyIndexGOGO::remove_from_index(off_t offset, internal_node_t& node,
+void ToyIndexGOGO::remove_from_index(off_t offset, ToyInternalNode& node,
     const ToyKeyk& key)
 {
     size_t min_n = meta.root_offset == offset ? 1 : meta.order / 2;
@@ -279,7 +279,7 @@ void ToyIndexGOGO::remove_from_index(off_t offset, internal_node_t& node,
     }
 
     if (node.n < min_n) {
-        internal_node_t parent;
+        ToyInternalNode parent;
         map(&parent, node.parent);
 
         bool borrowed = false;
@@ -294,7 +294,7 @@ void ToyIndexGOGO::remove_from_index(off_t offset, internal_node_t& node,
 
             if (offset == (end(parent) - 1)->child) {
                 assert(node.prev != 0);
-                internal_node_t prev;
+                ToyInternalNode prev;
                 map(&prev, node.prev);
 
                 ToyIndex* where = find(parent, begin(prev)->key);
@@ -304,7 +304,7 @@ void ToyIndexGOGO::remove_from_index(off_t offset, internal_node_t& node,
             }
             else {
                 assert(node.next != 0);
-                internal_node_t next;
+                ToyInternalNode next;
                 map(&next, node.next);
 
                 ToyIndex* where = find(parent, index_key);
@@ -324,20 +324,20 @@ void ToyIndexGOGO::remove_from_index(off_t offset, internal_node_t& node,
     }
 }
 
-bool ToyIndexGOGO::borrow_key(bool from_right, internal_node_t& borrower,
+bool ToyIndexGOGO::borrow_key(bool from_right, ToyInternalNode& borrower,
     off_t offset)
 {
-    typedef typename internal_node_t::child_t child_t;
+    typedef typename ToyInternalNode::child_t child_t;
 
     off_t lender_off = from_right ? borrower.next : borrower.prev;
-    internal_node_t lender;
+    ToyInternalNode lender;
     map(&lender, lender_off);
 
     assert(lender.n >= meta.order / 2);
     if (lender.n != meta.order / 2) {
         child_t where_to_lend, where_to_put;
 
-        internal_node_t parent;
+        ToyInternalNode parent;
 
         if (from_right) {
             where_to_lend = begin(lender);
@@ -373,15 +373,15 @@ bool ToyIndexGOGO::borrow_key(bool from_right, internal_node_t& borrower,
     return false;
 }
 
-bool ToyIndexGOGO::borrow_key(bool from_right, leaf_node_t& borrower)
+bool ToyIndexGOGO::borrow_key(bool from_right, ToyLeafNode& borrower)
 {
     off_t lender_off = from_right ? borrower.next : borrower.prev;
-    leaf_node_t lender;
+    ToyLeafNode lender;
     map(&lender, lender_off);
 
     assert(lender.n >= meta.order / 2);
     if (lender.n != meta.order / 2) {
-        typename leaf_node_t::child_t where_to_lend, where_to_put;
+        typename ToyLeafNode::child_t where_to_lend, where_to_put;
 
         if (from_right) {
             where_to_lend = begin(lender);
@@ -412,7 +412,7 @@ bool ToyIndexGOGO::borrow_key(bool from_right, leaf_node_t& borrower)
 void ToyIndexGOGO::change_parent_child(off_t parent, const ToyKeyk& o,
     const ToyKeyk& n)
 {
-    internal_node_t node;
+    ToyInternalNode node;
     map(&node, parent);
 
     ToyIndex* w = find(node, o);
@@ -425,14 +425,14 @@ void ToyIndexGOGO::change_parent_child(off_t parent, const ToyKeyk& o,
     }
 }
 
-void ToyIndexGOGO::merge_leafs(leaf_node_t* left, leaf_node_t* right)
+void ToyIndexGOGO::merge_leafs(ToyLeafNode* left, ToyLeafNode* right)
 {
     std::copy(begin(*right), end(*right), end(*left));
     left->n += right->n;
 }
 
 void ToyIndexGOGO::merge_keys(ToyIndex* where,
-    internal_node_t& node, internal_node_t& next, bool change_where_key)
+    ToyInternalNode& node, ToyInternalNode& next, bool change_where_key)
 {
     if (change_where_key) {
         where->key = (end(next) - 1)->key;
@@ -442,7 +442,7 @@ void ToyIndexGOGO::merge_keys(ToyIndex* where,
     node_remove(&node, &next);
 }
 
-void ToyIndexGOGO::insert_record_no_split(leaf_node_t* leaf,
+void ToyIndexGOGO::insert_record_no_split(ToyLeafNode* leaf,
     const ToyKeyk& key, const ToyValuek& value)
 {
     ToyRecord* where = upper_bound(begin(*leaf), end(*leaf), key);
@@ -453,11 +453,11 @@ void ToyIndexGOGO::insert_record_no_split(leaf_node_t* leaf,
     leaf->n++;
 }
 
-void ToyIndexGOGO::insert_ToyKeyko_index(off_t offset, const ToyKeyk& key,
+void ToyIndexGOGO::insert_key_to_index(off_t offset, const ToyKeyk& key,
     off_t old, off_t after)
 {
     if (offset == 0) {
-        internal_node_t root;
+        ToyInternalNode root;
         root.next = root.prev = root.parent = 0;
         meta.root_offset = alloc(&root);
         meta.height++;
@@ -475,12 +475,12 @@ void ToyIndexGOGO::insert_ToyKeyko_index(off_t offset, const ToyKeyk& key,
         return;
     }
 
-    internal_node_t node;
+    ToyInternalNode node;
     map(&node, offset);
     assert(node.n <= meta.order);
 
     if (node.n == meta.order) {
-        internal_node_t new_node;
+        ToyInternalNode new_node;
         node_create(offset, &node, &new_node);
 
         size_t point = (node.n - 1) / 2;
@@ -498,24 +498,24 @@ void ToyIndexGOGO::insert_ToyKeyko_index(off_t offset, const ToyKeyk& key,
         node.n = point + 1;
 
         if (place_right)
-            insert_ToyKeyko_index_no_split(new_node, key, after);
+            insert_key_to_index_no_split(new_node, key, after);
         else
-            insert_ToyKeyko_index_no_split(node, key, after);
+            insert_key_to_index_no_split(node, key, after);
 
         unmap(&node, offset);
         unmap(&new_node, node.next);
 
         reset_index_children_parent(begin(new_node), end(new_node), node.next);
 
-        insert_ToyKeyko_index(node.parent, middle_key, offset, node.next);
+        insert_key_to_index(node.parent, middle_key, offset, node.next);
     }
     else {
-        insert_ToyKeyko_index_no_split(node, key, after);
+        insert_key_to_index_no_split(node, key, after);
         unmap(&node, offset);
     }
 }
 
-void ToyIndexGOGO::insert_ToyKeyko_index_no_split(internal_node_t& node,
+void ToyIndexGOGO::insert_key_to_index_no_split(ToyInternalNode& node,
     const ToyKeyk& key, off_t value)
 {
     ToyIndex* where = upper_bound(begin(node), end(node) - 1, key);
@@ -532,7 +532,7 @@ void ToyIndexGOGO::insert_ToyKeyko_index_no_split(internal_node_t& node,
 void ToyIndexGOGO::reset_index_children_parent(ToyIndex* begin, ToyIndex* end,
     off_t parent)
 {
-    internal_node_t node;
+    ToyInternalNode node;
     while (begin != end) {
         map(&node, begin->child);
         node.parent = parent;
@@ -546,7 +546,7 @@ off_t ToyIndexGOGO::search_index(const ToyKeyk& key) const
     off_t org = meta.root_offset;
     int height = meta.height;
     while (height > 1) {
-        internal_node_t node;
+        ToyInternalNode node;
         map(&node, org);
 
         ToyIndex* i = upper_bound(begin(node), end(node) - 1, key);
@@ -559,7 +559,7 @@ off_t ToyIndexGOGO::search_index(const ToyKeyk& key) const
 
 off_t ToyIndexGOGO::search_leaf(off_t index, const ToyKeyk& key) const
 {
-    internal_node_t node;
+    ToyInternalNode node;
     map(&node, index);
 
     ToyIndex* i = upper_bound(begin(node), end(node) - 1, key);
@@ -599,18 +599,18 @@ void ToyIndexGOGO::node_remove(T* prev, T* node)
 
 void ToyIndexGOGO::init_from_empty()
 {
-    memset(&meta, 0, sizeof(meta_t));
+    memset(&meta, 0, sizeof(ToyMeta));
     meta.order = BP_ORDER;
     meta.value_size = sizeof(ToyValuek);
     meta.key_size = sizeof(ToyKeyk);
     meta.height = 1;
     meta.slot = OFFSET_BLOCK;
 
-    internal_node_t root;
+    ToyInternalNode root;
     root.next = root.prev = root.parent = 0;
     meta.root_offset = alloc(&root);
 
-    leaf_node_t leaf;
+    ToyLeafNode leaf;
     leaf.next = leaf.prev = 0;
     leaf.parent = meta.root_offset;
     meta.leaf_offset = root.children[0].child = alloc(&leaf);

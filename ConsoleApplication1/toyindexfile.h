@@ -44,8 +44,8 @@ inline int keycmp(const ToyKeyk& a, const ToyKeyk& b) {
     }
 
 #define OFFSET_META 0
-#define OFFSET_BLOCK OFFSET_META + sizeof(meta_t)
-#define SIZE_NO_CHILDREN sizeof(leaf_node_t) - BP_ORDER * sizeof(ToyRecord)
+#define OFFSET_BLOCK OFFSET_META + sizeof(ToyMeta)
+#define SIZE_NO_CHILDREN sizeof(ToyLeafNode) - BP_ORDER * sizeof(ToyRecord)
 
 
 typedef struct {
@@ -58,7 +58,7 @@ typedef struct {
     off_t slot;        
     off_t root_offset; 
     off_t leaf_offset; 
-} meta_t;
+} ToyMeta;
 
 
 struct ToyIndex {
@@ -67,7 +67,7 @@ struct ToyIndex {
 };
 
 
-struct internal_node_t {
+struct ToyInternalNode {
     typedef ToyIndex* child_t;
 
     off_t parent; 
@@ -84,7 +84,7 @@ struct ToyRecord {
 };
 
 
-struct leaf_node_t {
+struct ToyLeafNode {
     typedef ToyRecord* child_t;
 
     off_t parent; 
@@ -106,14 +106,14 @@ public:
     int remove(const ToyKeyk& key);
     int insert(const ToyKeyk& key, ToyValuek value);
     int update(const ToyKeyk& key, ToyValuek value);
-    meta_t get_meta() const {
+    ToyMeta get_meta() const {
         return meta;
     };
 
 
 private:
     char path[512];
-    meta_t meta;
+    ToyMeta meta;
 
     
     void init_from_empty();
@@ -129,33 +129,33 @@ private:
     }
 
     
-    void remove_from_index(off_t offset, internal_node_t& node,
+    void remove_from_index(off_t offset, ToyInternalNode& node,
         const ToyKeyk& key);
 
     
-    bool borrow_key(bool from_right, internal_node_t& borrower,
+    bool borrow_key(bool from_right, ToyInternalNode& borrower,
         off_t offset);
 
     
-    bool borrow_key(bool from_right, leaf_node_t& borrower);
+    bool borrow_key(bool from_right, ToyLeafNode& borrower);
 
     
     void change_parent_child(off_t parent, const ToyKeyk& o, const ToyKeyk& n);
 
     
-    void merge_leafs(leaf_node_t* left, leaf_node_t* right);
+    void merge_leafs(ToyLeafNode* left, ToyLeafNode* right);
 
-    void merge_keys(ToyIndex* where, internal_node_t& left,
-        internal_node_t& right, bool change_where_key = false);
+    void merge_keys(ToyIndex* where, ToyInternalNode& left,
+        ToyInternalNode& right, bool change_where_key = false);
 
     
-    void insert_record_no_split(leaf_node_t* leaf,
+    void insert_record_no_split(ToyLeafNode* leaf,
         const ToyKeyk& key, const ToyValuek& value);
 
     
-    void insert_ToyKeyko_index(off_t offset, const ToyKeyk& key,
+    void insert_key_to_index(off_t offset, const ToyKeyk& key,
         off_t value, off_t after);
-    void insert_ToyKeyko_index_no_split(internal_node_t& node, const ToyKeyk& key,
+    void insert_key_to_index_no_split(ToyInternalNode& node, const ToyKeyk& key,
         off_t value);
 
     
@@ -196,26 +196,26 @@ private:
         return slot;
     }
 
-    off_t alloc(leaf_node_t* leaf)
+    off_t alloc(ToyLeafNode* leaf)
     {
         leaf->n = 0;
         meta.leaf_node_num++;
-        return alloc(sizeof(leaf_node_t));
+        return alloc(sizeof(ToyLeafNode));
     }
 
-    off_t alloc(internal_node_t* node)
+    off_t alloc(ToyInternalNode* node)
     {
         node->n = 1;
         meta.internal_node_num++;
-        return alloc(sizeof(internal_node_t));
+        return alloc(sizeof(ToyInternalNode));
     }
 
-    void unalloc(leaf_node_t* leaf, off_t offset)
+    void unalloc(ToyLeafNode* leaf, off_t offset)
     {
         --meta.leaf_node_num;
     }
 
-    void unalloc(internal_node_t* node, off_t offset)
+    void unalloc(ToyInternalNode* node, off_t offset)
     {
         --meta.internal_node_num;
     }
