@@ -139,11 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bpt.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
+    <ClCompile Include="toyindexfile.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bpt.h" />
+    <ClInclude Include="toyindexfile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

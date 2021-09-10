@@ -1,22 +1,19 @@
-#ifndef BPT_H
-#define BPT_H
+#ifndef ToyIndexGOGO_HH
+#define ToyIndexGOGO_HH
 
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
 #include <string.h>
 
-/* predefined B+ info */
 #define BP_ORDER 20
 
-/* key/value type */
-typedef int value_t;
-struct key_t {
+typedef int ToyValuek;
+struct ToyKeyk {
     char k[16];
 
-    key_t(const char* str = "")
+    ToyKeyk(const char* str = "")
     {
         memset(k, 0, sizeof(k));
         strcpy(k, str);
@@ -27,91 +24,88 @@ struct key_t {
     }
 };
 
-inline int keycmp(const key_t& a, const key_t& b) {
+inline int keycmp(const ToyKeyk& a, const ToyKeyk& b) {
     int x = strlen(a.k) - strlen(b.k);
     return x == 0 ? strcmp(a.k, b.k) : x;
 }
 
 #define OPERATOR_KEYCMP(type) \
-    bool operator< (const key_t &l, const type &r) {\
+    bool operator< (const ToyKeyk &l, const type &r) {\
         return keycmp(l, r.key) < 0;\
     }\
-    bool operator< (const type &l, const key_t &r) {\
+    bool operator< (const type &l, const ToyKeyk &r) {\
         return keycmp(l.key, r) < 0;\
     }\
-    bool operator== (const key_t &l, const type &r) {\
+    bool operator== (const ToyKeyk &l, const type &r) {\
         return keycmp(l, r.key) == 0;\
     }\
-    bool operator== (const type &l, const key_t &r) {\
+    bool operator== (const type &l, const ToyKeyk &r) {\
         return keycmp(l.key, r) == 0;\
     }
 
-/* offsets */
 #define OFFSET_META 0
 #define OFFSET_BLOCK OFFSET_META + sizeof(meta_t)
 #define SIZE_NO_CHILDREN sizeof(leaf_node_t) - BP_ORDER * sizeof(ToyRecord)
 
-/* meta information of B+ tree */
+
 typedef struct {
-    size_t order; /* `order` of B+ tree */
-    size_t value_size; /* size of value */
-    size_t key_size;   /* size of key */
-    size_t internal_node_num; /* how many internal nodes */
-    size_t leaf_node_num;     /* how many leafs */
-    size_t height;            /* height of tree (exclude leafs) */
-    off_t slot;        /* where to store new block */
-    off_t root_offset; /* where is the root of internal nodes */
-    off_t leaf_offset; /* where is the first leaf */
+    size_t order; 
+    size_t value_size; 
+    size_t key_size;   
+    size_t internal_node_num; 
+    size_t leaf_node_num;     
+    size_t height;            
+    off_t slot;        
+    off_t root_offset; 
+    off_t leaf_offset; 
 } meta_t;
 
-/* internal nodes' index segment */
+
 struct ToyIndex {
-    key_t key;
-    off_t child; /* child's offset */
+    ToyKeyk key;
+    off_t child; 
 };
 
-/***
- * internal node block
- ***/
+
 struct internal_node_t {
     typedef ToyIndex* child_t;
 
-    off_t parent; /* parent node offset */
+    off_t parent; 
     off_t next;
     off_t prev;
-    size_t n; /* how many children */
+    size_t n; 
     ToyIndex children[BP_ORDER];
 };
 
-/* the final record of value */
+
 struct ToyRecord {
-    key_t key;
-    value_t value;
+    ToyKeyk key;
+    ToyValuek value;
 };
 
-/* leaf node block */
+
 struct leaf_node_t {
     typedef ToyRecord* child_t;
 
-    off_t parent; /* parent node offset */
+    off_t parent; 
     off_t next;
     off_t prev;
     size_t n;
     ToyRecord children[BP_ORDER];
 };
 
-/* the encapulated B+ tree */
+
 class ToyIndexGOGO {
 public:
     ToyIndexGOGO(const char* path, bool force_empty = false);
 
-    /* abstract operations */
-    int search(const key_t& key, value_t* value) const;
-    int search_range(key_t* left, const key_t& right,
-        value_t* values, size_t max, bool* next = NULL) const;
-    int remove(const key_t& key);
-    int insert(const key_t& key, value_t value);
-    int update(const key_t& key, value_t value);
+    
+    int search(const ToyKeyk& key, ToyValuek* value) const;
+    int search_range(ToyKeyk* left, const ToyKeyk& right,
+        ToyValuek* values, size_t max, bool* next = NULL) const;
+    int remove(const ToyKeyk& key);
+    int insert(const ToyKeyk& key, ToyValuek value);
+    int update(const ToyKeyk& key, ToyValuek value);
     meta_t get_meta() const {
         return meta;
     };
@@ -121,50 +115,50 @@ private:
     char path[512];
     meta_t meta;
 
-    /* init empty tree */
+    
     void init_from_empty();
 
-    /* find index */
-    off_t search_index(const key_t& key) const;
+    
+    off_t search_index(const ToyKeyk& key) const;
 
-    /* find leaf */
-    off_t search_leaf(off_t index, const key_t& key) const;
-    off_t search_leaf(const key_t& key) const
+    
+    off_t search_leaf(off_t index, const ToyKeyk& key) const;
+    off_t search_leaf(const ToyKeyk& key) const
     {
         return search_leaf(search_index(key), key);
     }
 
-    /* remove internal node */
+    
     void remove_from_index(off_t offset, internal_node_t& node,
-        const key_t& key);
+        const ToyKeyk& key);
 
-    /* borrow one key from other internal node */
+    
     bool borrow_key(bool from_right, internal_node_t& borrower,
         off_t offset);
 
-    /* borrow one record from other leaf */
+    
     bool borrow_key(bool from_right, leaf_node_t& borrower);
 
-    /* change one's parent key to another key */
-    void change_parent_child(off_t parent, const key_t& o, const key_t& n);
+    
+    void change_parent_child(off_t parent, const ToyKeyk& o, const ToyKeyk& n);
 
-    /* merge right leaf to left leaf */
+    
     void merge_leafs(leaf_node_t* left, leaf_node_t* right);
 
     void merge_keys(ToyIndex* where, internal_node_t& left,
         internal_node_t& right, bool change_where_key = false);
 
-    /* insert into leaf without split */
+    
     void insert_record_no_split(leaf_node_t* leaf,
-        const key_t& key, const value_t& value);
+        const ToyKeyk& key, const ToyValuek& value);
 
-    /* add key to the internal node */
-    void insert_key_to_index(off_t offset, const key_t& key,
+    
+    void insert_ToyKeyko_index(off_t offset, const ToyKeyk& key,
         off_t value, off_t after);
-    void insert_key_to_index_no_split(internal_node_t& node, const key_t& key,
+    void insert_ToyKeyko_index_no_split(internal_node_t& node, const ToyKeyk& key,
         off_t value);
 
-    /* change children's parent */
+    
     void reset_index_children_parent(ToyIndex* begin, ToyIndex* end,
         off_t parent);
 
@@ -174,7 +168,7 @@ private:
     template<class T>
     void node_remove(T* prev, T* node);
 
-    /* multi-level file open/close */
+    
     mutable FILE* fp;
     mutable int fp_level;
     void open_file(const char* mode = "rb+") const
@@ -194,7 +188,7 @@ private:
         --fp_level;
     }
 
-    /* alloc from disk */
+    
     off_t alloc(size_t size)
     {
         off_t slot = meta.slot;
@@ -226,7 +220,7 @@ private:
         --meta.internal_node_num;
     }
 
-    /* read block from disk */
+    
     int map(void* block, off_t offset, size_t size) const
     {
         open_file();
@@ -243,7 +237,7 @@ private:
         return map(block, offset, sizeof(T));
     }
 
-    /* write block to disk */
+    
     int unmap(void* block, off_t offset, size_t size) const
     {
         open_file();
@@ -263,4 +257,4 @@ private:
 
 
 
-#endif /* end of BPT_H */
+#endif 

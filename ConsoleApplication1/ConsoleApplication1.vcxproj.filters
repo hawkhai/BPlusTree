@@ -21,12 +21,12 @@
     <ClCompile Include="ConsoleApplication1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="bpt.cpp">
+    <ClCompile Include="toyindexfile.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bpt.h">
+    <ClInclude Include="toyindexfile.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
