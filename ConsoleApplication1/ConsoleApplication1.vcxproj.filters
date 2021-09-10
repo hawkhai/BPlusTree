@@ -21,14 +21,8 @@
     <ClCompile Include="ConsoleApplication1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="bpt.cc">
+    <ClCompile Include="bpt.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="util\cli.cc">
-      <Filter>util</Filter>
-    </ClCompile>
-    <ClCompile Include="util\dump_numbers.cc">
-      <Filter>util</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

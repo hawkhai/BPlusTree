@@ -20,7 +20,7 @@ namespace bpt {
 
         key_t(const char* str = "")
         {
-            bzero(k, sizeof(k));
+            memset(k, 0, sizeof(k));
             strcpy(k, str);
         }
 

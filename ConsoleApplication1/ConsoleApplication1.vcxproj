@@ -139,10 +139,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bpt.cc" />
+    <ClCompile Include="bpt.cpp" />
     <ClCompile Include="ConsoleApplication1.cpp" />
-    <ClCompile Include="util\cli.cc" />
-    <ClCompile Include="util\dump_numbers.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bpt.h" />
