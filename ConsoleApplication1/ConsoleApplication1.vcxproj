@@ -140,8 +140,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="ConsoleApplication1.cpp" />
+    <ClCompile Include="dump_numbers.cc" />
     <ClCompile Include="toyindexfile.cpp" />
-    <ClCompile Include="unit_test.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="toyindexfile.h" />

@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <string.h>
 
-#define TEST
+//#define TEST
 #ifdef TEST
 
 #define BP_ORDER 4

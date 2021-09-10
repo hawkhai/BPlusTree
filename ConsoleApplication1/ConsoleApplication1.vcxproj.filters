@@ -24,7 +24,7 @@
     <ClCompile Include="toyindexfile.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="unit_test.cc">
+    <ClCompile Include="dump_numbers.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
