@@ -143,12 +143,9 @@
     <ClCompile Include="ConsoleApplication1.cpp" />
     <ClCompile Include="util\cli.cc" />
     <ClCompile Include="util\dump_numbers.cc" />
-    <ClCompile Include="util\unit_test.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bpt.h" />
-    <ClInclude Include="predefined.h" />
-    <ClInclude Include="util\unit_test_predefined.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

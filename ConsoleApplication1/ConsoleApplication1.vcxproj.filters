@@ -30,19 +30,10 @@
     <ClCompile Include="util\dump_numbers.cc">
       <Filter>util</Filter>
     </ClCompile>
-    <ClCompile Include="util\unit_test.cc">
-      <Filter>util</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bpt.h">
       <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="predefined.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="util\unit_test_predefined.h">
-      <Filter>util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
