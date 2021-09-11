@@ -219,9 +219,18 @@ private:
     void open_file(const char* mode = "rb+") const
     {
         // `rb+` will make sure we can write everywhere without truncating file
-        if (fp_level == 0)
+        if (fp_level == 0) {
             fp = fopen(path, mode);
-
+            if (fp == nullptr) {
+                //int err = GetLastError();
+                //err = -1;
+                fp = fopen(path, "w+");
+                assert(fp);
+                fclose(fp);
+                fp = fopen(path, mode);
+            }
+            assert(fp);
+        }
         ++fp_level;
     }
 
