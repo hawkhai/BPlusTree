@@ -140,7 +140,7 @@ struct ToyLeafNode {
 class ToyIndexGOGO {
 public:
     ToyIndexGOGO(const char* path, bool force_empty = false);
-
+    virtual ~ToyIndexGOGO();
     
     int search(const ToyKeyk& key, ToyValuek* value) const;
     int search_range(ToyKeyk* left, const ToyKeyk& right,

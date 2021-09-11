@@ -53,6 +53,11 @@ ToyIndexGOGO::ToyIndexGOGO(const char* p, bool force_empty)
         init_from_empty();
         close_file();
     }
+    open_file();
+}
+
+ToyIndexGOGO::~ToyIndexGOGO() {
+    close_file();
 }
 
 int ToyIndexGOGO::search(const ToyKeyk& key, ToyValuek* value) const
